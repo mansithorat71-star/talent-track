@@ -1,0 +1,131 @@
+@model TalentTrack.Models.InterviewFeedback
+
+@{
+    ViewData["Title"] = "Feedback Details";
+    string badgeStyle = (Model.Recommendation == "Hire" || Model.Recommendation == "Recommended" || Model.Recommendation == "Recommend") 
+        ? "background-color: #E6F4EA !important; color: #137333 !important; border: 1px solid #CEEAD6 !important;" 
+        : (Model.Recommendation == "Reject" || Model.Recommendation == "Not Recommended" || Model.Recommendation == "Not Recommend") 
+            ? "background-color: #FCE8E6 !important; color: #C5221F !important; border: 1px solid #FAD2CF !important;" 
+            : "background-color: #FEF7E0 !important; color: #B06000 !important; border: 1px solid #FEEFC3 !important;";
+            
+    string recIcon = (Model.Recommendation == "Hire" || Model.Recommendation == "Recommended" || Model.Recommendation == "Recommend") ? "bi-check-circle-fill" :
+                     (Model.Recommendation == "Reject" || Model.Recommendation == "Not Recommended" || Model.Recommendation == "Not Recommend") ? "bi-x-circle-fill" : "bi-pause-circle-fill";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i>Back
+                </a>
+                <h4 class="fw-bold mb-0">Feedback Details</h4>
+            </div>
+
+            <!-- Candidate Info Card -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="tt-avatar" style="width:56px;height:56px;font-size:1.3rem;">
+                            @(Model.Candidate?.Name?.Substring(0,1).ToUpper() ?? "?")
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">@(Model.Candidate?.Name ?? "N/A")</h5>
+                            <div class="text-muted">@(Model.Interview?.Job?.JobTitle ?? "N/A")</div>
+                            <div class="text-muted small">
+                                Interviewed on @(Model.Interview?.InterviewDate.ToString("dd MMM yyyy, hh:mm tt") ?? "N/A")
+                            </div>
+                        </div>
+                        <div class="ms-auto">
+                            <span class="badge px-3 py-2 fs-6" style="@badgeStyle">
+                                <i class="bi @recIcon me-1"></i>@Model.Recommendation
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Stars -->
+                    <div class="d-flex align-items-center gap-1 mb-1">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <i class="bi bi-star-fill @(i <= Model.OverallRating ? "tt-star-display" : "tt-star-display empty")" style="font-size:1.4rem;"></i>
+                        }
+                        <span class="ms-2 fw-bold">@Model.OverallRating / 5</span>
+                    </div>
+                    <small class="text-muted">By: <strong>@(Model.Interviewer?.Name ?? "N/A")</strong> · @Model.CreatedAt.ToString("dd MMM yyyy")</small>
+                </div>
+            </div>
+
+            <!-- Dynamic Skills Ratings or Legacy Scores -->
+            @if (Model.SkillRatings != null && Model.SkillRatings.Any())
+            {
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white border-0 py-3 px-4">
+                        <h6 class="fw-bold mb-0"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Technical Skill Ratings</h6>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column gap-3">
+                        @foreach (var sr in Model.SkillRatings)
+                        {
+                            <div class="pb-3 border-bottom last-no-border">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-bold text-dark">@sr.SkillName</span>
+                                    <div class="d-flex align-items-center gap-1">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="bi bi-star-fill @(i <= sr.Rating ? "text-warning" : "text-muted opacity-25")" style="font-size:1.1rem;"></i>
+                                        }
+                                        <span class="ms-2 fw-semibold">@sr.Rating / 5</span>
+                                    </div>
+                                </div>
+                                @if (!string.IsNullOrEmpty(sr.Comment))
+                                {
+                                    <p class="text-muted small mb-0 bg-light p-2 rounded-3 border-start border-primary border-3">
+                                        @sr.Comment
+                                    </p>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+
+            <!-- Qualitative -->
+            <div class="row g-4 mb-4">
+                @if (!string.IsNullOrEmpty(Model.Strengths))
+                {
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm rounded-4 h-100" style="border-left:4px solid #10B981!important;">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold text-success mb-2"><i class="bi bi-plus-circle-fill me-2"></i>Strengths</h6>
+                                <p class="text-muted mb-0">@Model.Strengths</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.Weaknesses))
+                {
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm rounded-4 h-100" style="border-left:4px solid #EF4444!important;">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold text-danger mb-2"><i class="bi bi-dash-circle-fill me-2"></i>Areas to Improve</h6>
+                                <p class="text-muted mb-0">@Model.Weaknesses</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.Comments))
+            {
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-chat-left-quote-fill text-info me-2"></i>Additional Comments</h6>
+                        <p class="text-muted mb-0">@Model.Comments</p>
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
